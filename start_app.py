@@ -1,7 +1,14 @@
 import os
 import sys
+import site
 import subprocess
 import time
+
+# Adicionar site-packages do usuário e do venv no sys.path
+user_site = site.getusersitepackages()
+if user_site not in sys.path:
+    sys.path.append(user_site)
+
 
 def check_and_install_dependencies():
     required_packages = ["fastapi", "uvicorn", "sqlalchemy", "pydantic"]

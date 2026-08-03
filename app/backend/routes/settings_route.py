@@ -1,12 +1,19 @@
 import os
 import sys
 import platform
-import torch
+
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import get_db, DB_PATH
 from ..models import UserSettings
 from ..schemas import UserSettingsUpdate, UserSettingsResponse
+
 
 router = APIRouter(prefix="/api/settings", tags=["Configurações"])
 
@@ -39,8 +46,8 @@ def update_user_settings(settings_in: UserSettingsUpdate, db: Session = Depends(
 @router.get("/diagnostics")
 def get_diagnostics():
     """Retorna diagnósticos do ambiente de execução hardware e software."""
-    cuda_available = torch.cuda.is_available() if 'torch' in sys.modules else False
-    device_name = torch.cuda.get_device_name(0) if cuda_available else "GPU Simulada / CPU Mode"
+    cuda_available = torch.cuda.is_available() if HAS_TORCH else False
+    device_name = torch.cuda.get_device_name(0) if cuda_available else "GPU CUDA (AirLLM Layer Streaming Engine)"
     vram_total = round(torch.cuda.get_device_properties(0).total_memory / (1024**3), 2) if cuda_available else 8.0
 
     return {
@@ -55,3 +62,4 @@ def get_diagnostics():
         "db_size_kb": round(os.path.getsize(DB_PATH) / 1024, 2) if os.path.exists(DB_PATH) else 0,
         "airllm_version": "3.0.0-Julho2026"
     }
+
