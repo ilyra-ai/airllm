@@ -1,4 +1,5 @@
 {
   "aiEnvironmentManager.platform": "windows",
-  "aiEnvironmentManager.pythonEnvType": "venv"
+  "aiEnvironmentManager.pythonEnvType": "venv",
+  "aiEnvironmentManager.venvPath": "venv"
 }
