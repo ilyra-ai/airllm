@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirLLM Enterprise Studio | 70B, 405B & 2.8T em GPU Local</title>
+    
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js para Gráficos Interativos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- CSS Estilos Principais -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="dark-theme">
+    <div class="app-layout">
+        
+        <!-- SIDEBAR DE NAVEGAÇÃO -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-microchip brand-icon"></i>
+                    <div class="brand-text">
+                        <h2>AirLLM <span>Studio</span></h2>
+                        <span class="badge-version">v3.0 VIP 2026</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" data-tab="dashboard">
+                        <a href="#dashboard"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard Executivo</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="chat">
+                        <a href="#chat"><i class="fa-solid fa-comments"></i> <span>Playground Studio</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="models">
+                        <a href="#models"><i class="fa-solid fa-cubes"></i> <span>Gestão de Modelos</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="prompts">
+                        <a href="#prompts"><i class="fa-solid fa-book-bookmark"></i> <span>Biblioteca de Prompts</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="metrics">
+                        <a href="#metrics"><i class="fa-solid fa-gauge-high"></i> <span>Monitor de VRAM</span></a>
+                    </li>
+                    <li class="nav-item" data-tab="settings">
+                        <a href="#settings"><i class="fa-solid fa-sliders"></i> <span>Configurações</span></a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="vram-mini-card">
+                    <div class="vram-mini-header">
+                        <span><i class="fa-solid fa-memory"></i> Status de VRAM</span>
+                        <strong id="vram-mini-value">4.0 / 8.0 GB</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="vram-mini-progress" style="width: 50%;"></div>
+                    </div>
+                    <small>Streaming por Camadas Ativo</small>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="main-content">
+            
+            <!-- HEADER DA APLICAÇÃO -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button id="btn-toggle-sidebar" class="btn-icon" title="Alternar Sidebar">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h1 id="page-title">Dashboard Executivo</h1>
+                </div>
+
+                <div class="header-right">
+                    <!-- Status do Servidor -->
+                    <div class="server-status-pill">
+                        <span class="status-dot online"></span>
+                        <span id="server-status-text">Backend Local (Porta 8000)</span>
+                    </div>
+
+                    <!-- Dropdown de Perfil -->
+                    <div class="profile-dropdown-wrapper">
+                        <button class="profile-btn" id="btn-profile-dropdown">
+                            <div class="avatar">
+                                <i class="fa-solid fa-user-ninja"></i>
+                            </div>
+                            <div class="profile-info">
+                                <span class="profile-name" id="header-user-name">Engenheiro AirLLM</span>
+                                <span class="profile-role" id="header-user-role">Especialista PhD & MBA</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                        </button>
+
+                        <div class="dropdown-menu" id="profile-dropdown-menu">
+                            <div class="dropdown-header">
+                                <strong id="dropdown-user-name">Engenheiro AirLLM</strong>
+                                <small id="dropdown-user-role">Especialista PhD & MBA</small>
+                            </div>
+                            <hr>
+                            <a href="#settings" class="dropdown-item" data-action="go-settings">
+                                <i class="fa-solid fa-user-gear"></i> Perfil & Preferências
+                            </a>
+                            <a href="#metrics" class="dropdown-item" data-action="go-metrics">
+                                <i class="fa-solid fa-chart-line"></i> Diagnóstico de GPU
+                            </a>
+                            <hr>
+                            <div class="dropdown-footer">
+                                <span>AirLLM Engine 2026</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- CONTAINER DE VIEW DINÂMICA -->
+            <div class="view-container">
+
+                <!-- 1. DASHBOARD VIEW -->
+                <section id="view-dashboard" class="tab-view active">
+                    <div class="metrics-grid">
+                        <div class="stat-card glassmorphism">
+                            <div class="stat-icon cyan">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Economia de VRAM</span>
+                                <h3 class="stat-value" id="dash-vram-saved">95.0%</h3>
+                                <span class="stat-desc">Layer Streaming ativado</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glassmorphism">
+                            <div class="stat-icon purple">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Modelo Ativo</span>
+                                <h3 class="stat-value" id="dash-active-model">Llama 3.1 405B</h3>
+                                <span class="stat-desc" id="dash-model-params">405B Parâmetros em 8GB</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glassmorphism">
+                            <div class="stat-icon green">
+                                <i class="fa-solid fa-gauge-simple-high"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Velocidade Média</span>
+                                <h3 class="stat-value" id="dash-avg-tps">18.5 TPS</h3>
+                                <span class="stat-desc">Tokens por segundo</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glassmorphism">
+                            <div class="stat-icon orange">
+                                <i class="fa-solid fa-database"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Modelos Cadastrados</span>
+                                <h3 class="stat-value" id="dash-total-models">4</h3>
+                                <span class="stat-desc">Prontos para inferência</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-charts-grid">
+                        <div class="chart-box glassmorphism">
+                            <div class="chart-header">
+                                <h3><i class="fa-solid fa-chart-line"></i> Comparativo de Uso de Memória (GB)</h3>
+                                <span class="badge">AirLLM Streaming vs Padrão</span>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-vram-comparison"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="quick-actions-box glassmorphism">
+                            <h3><i class="fa-solid fa-rocket"></i> Ações Rápidas de Elite</h3>
+                            <div class="quick-actions-list">
+                                <button class="btn btn-primary" id="btn-quick-chat">
+                                    <i class="fa-solid fa-paper-plane"></i> Iniciar Chat no Studio
+                                </button>
+                                <button class="btn btn-secondary" id="btn-quick-model">
+                                    <i class="fa-solid fa-plus"></i> Cadastrar Novo Modelo HF
+                                </button>
+                                <button class="btn btn-outline" id="btn-quick-prompt">
+                                    <i class="fa-solid fa-bookmark"></i> Adicionar Template Prompt
+                                </button>
+                            </div>
+
+                            <div class="hardware-info-mini">
+                                <h4><i class="fa-solid fa-server"></i> Hardware Local</h4>
+                                <ul>
+                                    <li><span>Processador:</span> <strong id="hw-cpu">Detectando...</strong></li>
+                                    <li><span>Placa de Vídeo:</span> <strong id="hw-gpu">GPU CUDA / RTX</strong></li>
+                                    <li><span>VRAM Disponível:</span> <strong id="hw-vram">8.0 GB</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. PLAYGROUND CHAT VIEW -->
+                <section id="view-chat" class="tab-view">
+                    <div class="chat-studio-container glassmorphism">
+                        
+                        <!-- Sidebar de Histórico do Chat -->
+                        <div class="chat-history-sidebar">
+                            <div class="chat-history-header">
+                                <button class="btn btn-primary btn-block" id="btn-new-chat">
+                                    <i class="fa-solid fa-plus"></i> Novo Chat
+                                </button>
+                            </div>
+                            <div class="conversations-list" id="conversations-list">
+                                <!-- Lista carregada via JS -->
+                            </div>
+                            <div class="chat-history-footer">
+                                <button class="btn btn-outline-danger btn-sm btn-block" id="btn-clear-history">
+                                    <i class="fa-solid fa-trash"></i> Limpar Histórico
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Área de Bate-Papo Principal -->
+                        <div class="chat-main-area">
+                            <div class="chat-header-bar">
+                                <div class="chat-title-info">
+                                    <h3 id="current-chat-title">Estúdio de Inferência AirLLM</h3>
+                                    <span class="badge cyan" id="current-chat-model-badge">Modelo: Carregando...</span>
+                                </div>
+                                <div class="chat-controls">
+                                    <select id="chat-model-select" class="form-select sm">
+                                        <!-- Opções via JS -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Mensagens do Chat -->
+                            <div class="chat-messages-container" id="chat-messages-container">
+                                <div class="chat-welcome-message">
+                                    <div class="welcome-icon">
+                                        <i class="fa-solid fa-brain"></i>
+                                    </div>
+                                    <h2>AirLLM Studio Executivo</h2>
+                                    <p>Execute modelos de até <strong>2.8 Trilhões de Parâmetros (Kimi K3, Llama 3.1 405B, DeepSeek-V3)</strong> diretamente na sua GPU local sem estourar o limite de VRAM.</p>
+                                    <div class="welcome-suggestions">
+                                        <button class="suggestion-chip" data-prompt="Explique como o AirLLM consegue rodar um modelo de 70B em apenas 4GB de VRAM sem quantização destrutiva.">
+                                            💡 Como funciona o Layer Streaming?
+                                        </button>
+                                        <button class="suggestion-chip" data-prompt="Escreva uma função completa em Python com suporte a concorrência assíncrona utilizando FastAPI e SQLite.">
+                                            🐍 Código Python FastAPI Avançado
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Barra de Transmissão de Camada ao Vivo -->
+                            <div class="layer-streaming-bar" id="layer-streaming-bar" style="display: none;">
+                                <div class="layer-info">
+                                    <span><i class="fa-solid fa-spinner fa-spin"></i> Transmitindo Camada: <strong id="stream-active-layer">0 / 80</strong></span>
+                                    <span id="stream-tps">0.0 TPS</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill cyan" id="stream-layer-progress" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Formulário de Envio -->
+                            <div class="chat-input-wrapper">
+                                <form id="form-chat-send" class="chat-form">
+                                    <textarea id="chat-prompt-input" placeholder="Digite sua instrução ou pergunta em Português (Pressione Enter para enviar)..." rows="2" required></textarea>
+                                    <button type="submit" class="btn btn-primary btn-send" id="btn-chat-send">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    </button>
+                                </form>
+                                <div class="input-actions-bar">
+                                    <div class="action-left">
+                                        <button type="button" class="btn-text-sm" id="btn-insert-prompt-modal">
+                                            <i class="fa-solid fa-wand-magic-sparkles"></i> Usar Template Prompt
+                                        </button>
+                                    </div>
+                                    <div class="action-right">
+                                        <small>Temperatura: <span id="val-temp">0.7</span></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 3. GESTÃO DE MODELOS VIEW (CRUD) -->
+                <section id="view-models" class="tab-view">
+                    <div class="view-header">
+                        <div>
+                            <h2>Gestão de Modelos HuggingFace</h2>
+                            <p>Cadastre, configure e ative modelos para inferência local no AirLLM.</p>
+                        </div>
+                        <button class="btn btn-primary" id="btn-open-modal-add-model">
+                            <i class="fa-solid fa-plus"></i> Cadastrar Novo Modelo
+                        </button>
+                    </div>
+
+                    <div class="models-grid" id="models-grid-container">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </section>
+
+                <!-- 4. BIBLIOTECA DE PROMPTS VIEW (CRUD) -->
+                <section id="view-prompts" class="tab-view">
+                    <div class="view-header">
+                        <div>
+                            <h2>Biblioteca de Prompts de Elite</h2>
+                            <p>Armazene e gerencie prompts em Português-BR para reutilização instantânea.</p>
+                        </div>
+                        <button class="btn btn-primary" id="btn-open-modal-add-prompt">
+                            <i class="fa-solid fa-plus"></i> Criar Novo Template
+                        </button>
+                    </div>
+
+                    <div class="prompts-filter-bar">
+                        <div class="filter-categories" id="prompt-category-filters">
+                            <button class="btn-filter active" data-cat="Todos">Todos</button>
+                            <button class="btn-filter" data-cat="Programação">Programação</button>
+                            <button class="btn-filter" data-cat="Análise">Análise</button>
+                            <button class="btn-filter" data-cat="Criativo">Criativo</button>
+                            <button class="btn-filter" data-cat="Sistema">Sistema</button>
+                        </div>
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="search-prompts-input" placeholder="Buscar prompt por nome ou tag...">
+                        </div>
+                    </div>
+
+                    <div class="prompts-grid" id="prompts-grid-container">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </section>
+
+                <!-- 5. MONITOR DE MÉTRICAS VIEW -->
+                <section id="view-metrics" class="tab-view">
+                    <div class="view-header">
+                        <div>
+                            <h2>Monitor de Performance & GPU VRAM</h2>
+                            <p>Acompanhamento ao vivo da execução de camadas e consumo de memória do sistema.</p>
+                        </div>
+                        <button class="btn btn-secondary" id="btn-refresh-metrics">
+                            <i class="fa-solid fa-arrows-rotate"></i> Atualizar Métricas
+                        </button>
+                    </div>
+
+                    <div class="metrics-dashboard-grid">
+                        <div class="chart-box glassmorphism wide">
+                            <h3><i class="fa-solid fa-chart-area"></i> Streaming de Camadas de GPU vs RAM do Sistema</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-live-metrics"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="diagnostics-box glassmorphism">
+                            <h3><i class="fa-solid fa-stethoscope"></i> Diagnósticos do Sistema</h3>
+                            <div class="diagnostics-list" id="diagnostics-list-container">
+                                <!-- Renderizado via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. CONFIGURAÇÕES VIEW -->
+                <section id="view-settings" class="tab-view">
+                    <div class="view-header">
+                        <div>
+                            <h2>Configurações do Sistema</h2>
+                            <p>Personalize suas preferências, parâmetros de geração e chaves de acesso.</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-card glassmorphism">
+                        <form id="form-settings" class="settings-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="set-user-name">Nome do Usuário</label>
+                                    <input type="text" id="set-user-name" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="set-user-role">Cargo / Título</label>
+                                    <input type="text" id="set-user-role" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="set-temp">Temperatura Padrão</label>
+                                    <input type="number" id="set-temp" class="form-control" step="0.1" min="0" max="2" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="set-top-p">Top-P Padrão</label>
+                                    <input type="number" id="set-top-p" class="form-control" step="0.05" min="0" max="1" required>
+                                </div>
+                                <div class="form-group span-2">
+                                    <label for="set-hf-token">HuggingFace Token (Opcional para modelos privados)</label>
+                                    <input type="password" id="set-hf-token" class="form-control" placeholder="hf_********************************">
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa-solid fa-floppy-disk"></i> Salvar Configurações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DE ADICIONAR / EDITAR MODELO -->
+    <div class="modal-backdrop" id="modal-model">
+        <div class="modal-content glassmorphism">
+            <div class="modal-header">
+                <h3 id="modal-model-title">Cadastrar Novo Modelo HuggingFace</h3>
+                <button class="btn-close-modal" data-close="modal-model">&times;</button>
+            </div>
+            <form id="form-model">
+                <input type="hidden" id="model-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="model-name">Nome Exibição do Modelo</label>
+                        <input type="text" id="model-name" class="form-control" placeholder="ex: Llama 3.1 70B Instruct" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="model-hf-id">Repositório HuggingFace (HF Repo ID)</label>
+                        <input type="text" id="model-hf-id" class="form-control" placeholder="ex: meta-llama/Llama-3.1-70B-Instruct" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="model-params">Parâmetros (Bilhões)</label>
+                            <input type="number" id="model-params" class="form-control" step="0.1" value="70.0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="model-vram">VRAM Necessária (GB)</label>
+                            <input type="number" id="model-vram" class="form-control" step="0.1" value="4.0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="model-compression">Modo de Compressão / Execução</label>
+                        <select id="model-compression" class="form-select">
+                            <option value="layer_streaming">Streaming de Camadas (AirLLM Standard)</option>
+                            <option value="fp8_expert_stream">FP8 Expert Stream (MoE)</option>
+                            <option value="4bit">Quantização 4-bit + Layer Stream</option>
+                            <option value="8bit">Quantização 8-bit + Layer Stream</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="model-description">Descrição Técnica</label>
+                        <textarea id="model-description" class="form-control" rows="2" placeholder="Descreva os detalhes e casos de uso deste modelo..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close="modal-model">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Salvar Modelo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE ADICIONAR / EDITAR PROMPT -->
+    <div class="modal-backdrop" id="modal-prompt">
+        <div class="modal-content glassmorphism">
+            <div class="modal-header">
+                <h3 id="modal-prompt-title">Criar Novo Template de Prompt</h3>
+                <button class="btn-close-modal" data-close="modal-prompt">&times;</button>
+            </div>
+            <form id="form-prompt">
+                <input type="hidden" id="prompt-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="prompt-name">Nome do Template</label>
+                        <input type="text" id="prompt-name" class="form-control" placeholder="ex: Refatoração Python de Alto Desempenho" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prompt-category">Categoria</label>
+                        <select id="prompt-category" class="form-select">
+                            <option value="Programação">Programação</option>
+                            <option value="Análise">Análise</option>
+                            <option value="Criativo">Criativo</option>
+                            <option value="Sistema">Sistema</option>
+                            <option value="Geral">Geral</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="prompt-system">Instrução de Sistema (System Prompt - Opcional)</label>
+                        <textarea id="prompt-system" class="form-control" rows="2" placeholder="Atue como especialista em..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="prompt-content">Conteúdo do Template</label>
+                        <textarea id="prompt-content" class="form-control" rows="4" placeholder="Insira o texto do prompt..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="prompt-tags">Tags (Separadas por vírgula)</label>
+                        <input type="text" id="prompt-tags" class="form-control" placeholder="ex: python, fastapi, banco de dados">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close="modal-prompt">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Salvar Prompt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTAINER DE TOASTS -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- SCRIPT DA APLICAÇÃO -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
